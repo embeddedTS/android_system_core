@@ -461,9 +461,12 @@ exit_success:
 int do_mount_all(int nargs, char **args)
 {
     pid_t pid;
+    FILE *cmdline_file;
+    char cmdline[256], fstabpath[256], *bootdev, *p;
     int ret = -1;
     int child_ret = -1;
     int status;
+    int i;
     const char *prop;
     struct fstab *fstab;
 
@@ -489,7 +492,30 @@ int do_mount_all(int nargs, char **args)
     } else if (pid == 0) {
         /* child, call fs_mgr_mount_all() */
         klog_set_level(6);  /* So we can see what fs_mgr_mount_all() does */
-        fstab = fs_mgr_read_fstab(args[1]);
+        if(strncmp(args[1], "-ts", 3) == 0){
+            cmdline_file = fopen("/proc/cmdline", "r");
+            if (!cmdline_file) {
+                ERROR("Cannot open /proc/cmdline!\n");
+                return 0;
+            }
+            fs_getline(cmdline, sizeof(cmdline), cmdline_file);
+            bootdev = strstr(cmdline, "bootdev=") + 8;
+            // If this is not the last string, add a null after the space
+            // so we can search by string.  if it is the last string, we
+            // shouldn't need to do anything
+            for (i = 0; i < strlen(bootdev); i++)
+            {
+                if(bootdev[i] == NULL)
+                    break;
+                if(bootdev[i] == '\n' || bootdev[i] == ' ')
+                    bootdev[i] = 0;
+            }
+            snprintf(fstabpath, 254, "/fstab.%s", bootdev);
+            fstab = fs_mgr_read_fstab(fstabpath);
+            fclose(cmdline_file);        
+        } else {
+            fstab = fs_mgr_read_fstab(args[1]);
+        }
         child_ret = fs_mgr_mount_all(fstab);
         fs_mgr_free_fstab(fstab);
         if (child_ret == -1) {

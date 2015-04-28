@@ -18,6 +18,8 @@
 #define __CORE_FS_MGR_H
 
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <linux/dm-ioctl.h>
 
 #ifdef __cplusplus
@@ -64,6 +66,7 @@ int fs_mgr_is_nonremovable(struct fstab_rec *fstab);
 int fs_mgr_is_encryptable(struct fstab_rec *fstab);
 int fs_mgr_is_noemulatedsd(struct fstab_rec *fstab);
 int fs_mgr_swapon_all(struct fstab *fstab);
+char *fs_getline(char *buf, int size, FILE *file);
 #ifdef __cplusplus
 }
 #endif

@@ -243,7 +243,7 @@ out:
  * then return an empty buffer.  This effectively ignores lines that are too long.
  * On EOF, return null.
  */
-static char *fs_getline(char *buf, int size, FILE *file)
+char *fs_getline(char *buf, int size, FILE *file)
 {
     int cnt = 0;
     int eof = 0;
